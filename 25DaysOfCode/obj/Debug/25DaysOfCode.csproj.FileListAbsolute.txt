@@ -1,0 +1,8 @@
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\bin\Debug\Resources\Day1Test.txt
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\bin\Debug\Resources\Day2Test.txt
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\bin\Debug\25DaysOfCode.exe.config
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\bin\Debug\25DaysOfCode.exe
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\bin\Debug\25DaysOfCode.pdb
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\obj\Debug\25DaysOfCode.exe
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\obj\Debug\25DaysOfCode.pdb
+C:\Users\tkk10\source\repos\25DaysOfCode\25DaysOfCode\obj\Debug\25DaysOfCode.csprojAssemblyReference.cache

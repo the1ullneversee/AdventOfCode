@@ -1,0 +1,10 @@
+{
+  "cookie": "session=c0nt3nt",
+  // Valid cookie content required to retrieve puzzle input from adventofcode.com with ASolution.LoadInput(). 
+
+  "year": 2019,
+  // Simple int value representing year to pull puzzles from. Used for folder navigation and puzzle input retrieval. 
+
+  "days": [ 0 ]
+  // int[] representing days of which to collect solutions. 0 resolves to "all". 
+}
