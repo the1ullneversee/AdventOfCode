@@ -11,31 +11,48 @@ namespace _25DaysOfCode.Solutions.Year2019.Day03
     {
         string line1= null;
         string line2 = null;
+        List<Point> CoordianteListL1;
+        List<Point> CoordianteListL2;
         DateTime start;
 
         public Day03() : base("Crossed Wires", 2019, 3)
         {
             line1 = Input[0];
             line2 = Input[1];
+            CoordianteListL1 = new List<Point>(TransformMovementList(line1));
+            CoordianteListL2 = new List<Point>(TransformMovementList(line2));
             //masses = Input.Select(s => int.Parse(s)).ToArray();
         }
 
         protected override string SolvePartOne()
         {
-            return WorkOutManhattanDistanceBetweenTwoLines(line1, line2);
+            return GetLowestManhattanDistanceFromTwoLineMovements(CoordianteListL1, CoordianteListL2);
         }
 
         protected override string SolvePartTwo()
         {
-            return "";
+            return GetLowestPathDistanceForIntersect(CoordianteListL1, CoordianteListL2);
         }
 
-        private static string WorkOutManhattanDistanceBetweenTwoLines(string line1, string line2)
+        private string GetLowestPathDistanceForIntersect(List<Point> CoordianteListL1, List<Point> CoordianteListL2)
+        {
+            int lowestIntersect = int.MaxValue;
+            foreach (var intersect in CoordianteListL1.Intersect(CoordianteListL2))
+            {
+                int line1IntersectMovements = GetNumberOfMovementsToIntersection(CoordianteListL1, intersect);
+                int line2IntersectMovements = GetNumberOfMovementsToIntersection(CoordianteListL2, intersect);
+                int total = line1IntersectMovements + line2IntersectMovements;
+                if(total < lowestIntersect)
+                {
+                    lowestIntersect = total;
+                }
+            }
+            return lowestIntersect.ToString();
+        }
+
+        private string GetLowestManhattanDistanceFromTwoLineMovements(List<Point> CoordianteListL1, List<Point> CoordianteListL2)
         {
             //work out the transformation from the given input movements, store each transformation.
-            List<Point> CoordianteListL1 = TransformMovementList(line1);
-            List<Point> CoordianteListL2 = TransformMovementList(line2);
-
             Point start = new Point(0, 0);
             int lowestDistance = int.MaxValue;
             foreach (var interesct in CoordianteListL1.Intersect(CoordianteListL2))
@@ -51,6 +68,14 @@ namespace _25DaysOfCode.Solutions.Year2019.Day03
                 Console.Write($"Distance is [{distance}] ");
             }
             return lowestDistance.ToString();
+        }
+
+        private static int GetNumberOfMovementsToIntersection(List<Point> CoordianteList, Point interesct)
+        {
+            var intersectPathPoints = CoordianteList.ToList();
+            var index = CoordianteList.IndexOf(interesct);
+            intersectPathPoints.RemoveRange(index + 1, ((intersectPathPoints.Count - 1) - index));
+            return intersectPathPoints.Count;
         }
 
         private static List<Point> TransformMovementList(string movements)
