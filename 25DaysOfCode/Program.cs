@@ -1,4 +1,5 @@
-﻿using _25DaysOfCode.Solutions.Year2019.Day03;
+﻿using _25DaysOfCode.Solutions;
+using _25DaysOfCode.Solutions.Year2019.Day04;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,11 +15,10 @@ namespace _25DaysOfCode
     {
         static void Main(string[] args)
         {
-            int day = 3;
-            string type = $"_25DaysOfCode.Solutions.Year{2019}.Day{day.ToString("D2")}";
-
-            var solution = Type.GetType($"_25DaysOfCode.Solutions.Year{2019}.Day{day.ToString("D2")}");
-            AVC avc = (AVC)Activator.CreateInstance(typeof(Day03));
+            int day = 5;
+            string type = $"_25DaysOfCode.Solutions.Year{2019}.Day{day.ToString("D2")}.Day{day.ToString("D2")}";
+            var solution = Type.GetType(type);
+            AVC avc = (AVC)Activator.CreateInstance(solution);
             avc.Solve();
 
         }
@@ -98,6 +98,7 @@ namespace _25DaysOfCode
         //Opcode 2 works exactly like opcode 1, except it multiplies the two inputs
         //Hopes 4 along each time.
         public enum opCodes { add = 1, times = 2, halt = 99 }
+
         public static int[] IntCodeComputer(int[] opCodeSeq)
         {
             int jumpIndex = 0;

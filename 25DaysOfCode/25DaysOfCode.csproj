@@ -47,19 +47,21 @@
     <Compile Include="AVC.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="JsonSerializerOptions.cs" />
+    <Compile Include="Solutions\IntCodeComputer.cs" />
     <Compile Include="Solutions\Year2019\Day01\Solution.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Solutions\Year2019\Day02\Day02.cs" />
     <Compile Include="Solutions\Year2019\Day03\Day03.cs" />
+    <Compile Include="Solutions\Year2019\Day04\Day04.cs" />
+    <Compile Include="Solutions\Year2019\Day05\Day05.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="config.json" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Solutions\Year2019\Day02\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="Resources\Day1Test.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
