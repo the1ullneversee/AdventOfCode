@@ -37,16 +37,18 @@ namespace _25DaysOfCode.Solutions
             opCodeSequence[index] = value;
         }
 
-        public int[] IntCodeComputer()
+        public string IntCodeComputer()
         {
             //InitMemory();
             int jumpIndex = 0;
-            while (ProcessOptCode(ref opCodeSequence,jumpIndex) != false || jumpIndex >= opCodeSequence.Length)
+            string output = "";
+            while (ProcessOptCode(ref opCodeSequence, jumpIndex, ref output) && jumpIndex <= opCodeSequence.Length)
             {
+                //output = ProcessOptCode(ref opCodeSequence, jumpIndex);
                 jumpIndex += 4;
             }
 
-            return opCodeSequence;
+            return output;
         }
 
         public int[] IntCodeComputerWithMode()
@@ -54,31 +56,36 @@ namespace _25DaysOfCode.Solutions
             //InitMemory();
             int currentPosition = 0;
             int instructionLength = 4;
-            while (ProcessOptCodeWithMode(ref opCodeSequence, currentPosition, ref instructionLength) != false || currentPosition >= opCodeSequence.Length)
+            string output = "";
+            while (currentPosition <= opCodeSequence.Length)
             {
+                output += ProcessOptCodeWithMode(ref opCodeSequence, currentPosition, ref instructionLength);
                 currentPosition += instructionLength;
             }
 
             return opCodeSequence;
         }
 
-        public bool ProcessOptCode(ref int[] opCodeSeq,int instructionStart)
+        public bool ProcessOptCode(ref int[] opCodeSeq,int instructionStart, ref string output)
         {
             try
             {
                 //new route is ABCDE
-                //int instruction = int.Parse($"{opCodeSeq[instructionStart]}{opCodeSeq[instructionStart + 1]}{opCodeSeq[instructionStart + 2]}{opCodeSeq[instructionStart + 3]}");
-                //var InstructionRules = ProcessInstruction(instruction);
                 //before we do the operation. We must work out what mode we are in.
+                int pos1, pos2, pos3;
+                pos3 = opCodeSeq[instructionStart + 3];
+                pos2 = opCodeSeq[instructionStart + 2];
+                pos1 = opCodeSeq[instructionStart + 1];
                 switch ((OpCodes)opCodeSeq[instructionStart])
                 {
                     case OpCodes.add:
-                        opCodeSeq[opCodeSeq[instructionStart + 3]] = opCodeSeq[opCodeSeq[instructionStart + 1]] + opCodeSeq[opCodeSeq[instructionStart + 2]];
+                        opCodeSeq[pos3] = opCodeSeq[pos1] + opCodeSeq[pos2];
                         break;
                     case OpCodes.times:
-                        opCodeSeq[opCodeSeq[instructionStart + 3]] = opCodeSeq[opCodeSeq[instructionStart + 1]] * opCodeSeq[opCodeSeq[instructionStart + 2]];
+                        opCodeSeq[pos3] = opCodeSeq[pos1] * opCodeSeq[pos2];
                         break;
                     case OpCodes.halt:
+                        output = opCodeSeq[0].ToString();
                         return false;
                 }
                 return true;
@@ -111,7 +118,7 @@ namespace _25DaysOfCode.Solutions
 
         }
 
-        public bool ProcessOptCodeWithMode(ref int[] opCodeSeq, int instructionStart,ref int instructionLength)
+        public string ProcessOptCodeWithMode(ref int[] opCodeSeq, int instructionStart,ref int instructionLength)
         {
             try
             {
@@ -121,44 +128,55 @@ namespace _25DaysOfCode.Solutions
                     sequence.Add(opCodeSeq[instructionStart + idx]);
 
                 //int instruction = int.Parse($"{opCodeSeq[instructionStart]}{opCodeSeq[instructionStart + 1]}{opCodeSeq[instructionStart + 2]}{opCodeSeq[instructionStart + 3]}");
-                var InstructionRules = ProcessInstruction(sequence);
+                //var InstructionRules = ProcessInstruction(sequence);
                 //var digits = IntegerToDigits(instruction);
                 //before we do the operation. We must work out what mode we are in.
-                int position = 0;
+                
                 List<int> paramList = new List<int>();
                 //1002,4,3,4 <- Example
                 //Parameters that an instruction writes to will never be in immediate mode.
                 //Need to work out what mode each value is in.
                 //instruction 4 is the opcode.
-                switch (InstructionRules.Item1)
+                switch ((OpCodes)sequence[0])
                 {
                     case OpCodes.add:
+                        //you know that an add will need a certain number of parameters.
                         //Write to will never be an immediate value // then need to work out these two
-                        opCodeSeq[opCodeSeq[instructionStart + 3]] = RetrieveValueBasedOnMode(InstructionRules.Item2,opCodeSeq, instructionStart+1) + RetrieveValueBasedOnMode(InstructionRules.Item3, opCodeSeq, instructionStart + 2);
+                        // OpCode , Module, Module, Module.
+                        opCodeSeq[opCodeSeq[instructionStart + 3]] = RetrieveValueBasedOnMode((ModuleCodes)sequence[2], opCodeSeq, instructionStart+1) + RetrieveValueBasedOnMode((ModuleCodes)sequence[3], opCodeSeq, instructionStart + 2);
+                        instructionLength = 4;
                         break;
                     case OpCodes.times:
-                        opCodeSeq[opCodeSeq[instructionStart + 3]] = RetrieveValueBasedOnMode(InstructionRules.Item2, opCodeSeq, instructionStart + 1) * RetrieveValueBasedOnMode(InstructionRules.Item3, opCodeSeq, instructionStart + 2);
+                        //opCodeSeq[opCodeSeq[instructionStart + 3]] = RetrieveValueBasedOnMode((ModuleCodes)opCodeSeq, opCodeSeq, instructionStart + 1) * RetrieveValueBasedOnMode((ModuleCodes)sequence[3], opCodeSeq, instructionStart + 2);
+                        instructionLength = 4;
                         break;
                     case OpCodes.input:
+                        Console.WriteLine("Enter an input");
+                        int val = int.Parse(Console.ReadLine());
+                        int position = opCodeSeq[instructionStart + 1];
+                        opCodeSeq[position] = val;
+                        instructionLength = 2;
                         break;
                     case OpCodes.output:
-                        break;
+                        instructionLength = 2;
+                        return opCodeSeq[opCodeSeq[instructionStart + 1]].ToString();
+
                     case OpCodes.halt:
-                        return false;
+                        return "";
                 }
-                return true;
+                return "";
             }
             catch (Exception exc)
             {
                 Debug.WriteLine(exc.Message);
-                return false;
+                return "";
             }
 
         }
 
         private int RetrieveValueBasedOnMode(ModuleCodes mc,int[] opCodeSeq, int index)
         {
-            switch(mc)
+            switch (mc)
             {
                 case ModuleCodes.immediateMode:
                     return opCodeSeq[index];

@@ -19,7 +19,7 @@ namespace _25DaysOfCode.Solutions.Year2019.Day02
             ICC icc = new ICC(Input);
             icc.SetArrayValues(1, 12);
             icc.SetArrayValues(2, 2);
-            return icc.IntCodeComputer()[0].ToString();
+            return icc.IntCodeComputer();
         }
 
         protected override string SolvePartTwo()
@@ -43,7 +43,7 @@ namespace _25DaysOfCode.Solutions.Year2019.Day02
                     icc.SetArrayValues(1, i);
                     icc.SetArrayValues(2, j);
                     var output = icc.IntCodeComputer();
-                    if (output[0] == product)
+                    if (output == product.ToString())
                     {
                         verb = j;
                         found = true;
