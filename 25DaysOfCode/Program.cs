@@ -15,7 +15,7 @@ namespace _25DaysOfCode
     {
         static void Main(string[] args)
         {
-            int day = 2;
+            int day = 5;
             string type = $"_25DaysOfCode.Solutions.Year{2019}.Day{day.ToString("D2")}.Day{day.ToString("D2")}";
             var solution = Type.GetType(type);
             AVC avc = (AVC)Activator.CreateInstance(solution);

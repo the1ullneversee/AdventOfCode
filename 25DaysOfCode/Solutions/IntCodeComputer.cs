@@ -9,14 +9,16 @@ namespace _25DaysOfCode.Solutions
 {
     public class ICC
     {
-        public enum OpCodes { add = 1, times = 2, halt = 99 , input = 3, output = 4};
+        public enum OpCodes { add = 01, times = 02, halt = 99 , input = 03, output = 04, jumpIfTrue = 05, jumpIfFalse = 06, isLessThan = 07, isEquals = 08 };
         public enum ModuleCodes { positionMode = 0, immediateMode = 1}
-        int[] opCodeSequence;
+        public int[] opCodeSequence;
         int[] MasterSequence;
-
+        public int manualInput;
         public ICC(string[] Input_)
         {
             MasterSequence = Input_[0].Split(',').Select(int.Parse).ToArray();
+            //MasterSequence = new int[]{
+            //   3,3,1105,-1,9,1101,0,0,12,4,12,99,1};
             opCodeSequence = (int[])MasterSequence.Clone();
         }
 
@@ -42,12 +44,21 @@ namespace _25DaysOfCode.Solutions
             //InitMemory();
             int jumpIndex = 0;
             string output = "";
-            while (ProcessOptCode(ref opCodeSequence, jumpIndex, ref output) && jumpIndex <= opCodeSequence.Length)
+            bool haltOrBadOutput = false;
+            while (jumpIndex <= opCodeSequence.Length)
             {
+                haltOrBadOutput = ProcessOptCode(ref opCodeSequence, ref jumpIndex, ref output);
+                int idx = 0;
+                //Debug.Write($"After: ");
+                //foreach (var num in opCodeSequence)
+                //    Console.Write($"[{idx++},{num}]");
+                //Debug.Write("\n");
+                if (haltOrBadOutput)
+                    break;
                 //output = ProcessOptCode(ref opCodeSequence, jumpIndex);
-                jumpIndex += 4;
+                //jumpIndex += 4;
             }
-
+            //Console.WriteLine(output);
             return output;
         }
 
@@ -66,29 +77,116 @@ namespace _25DaysOfCode.Solutions
             return opCodeSequence;
         }
 
-        public bool ProcessOptCode(ref int[] opCodeSeq,int instructionStart, ref string output)
+        public bool ProcessOptCode(ref int[] opCodeSeq,ref int instructionStart, ref string output)
         {
             try
             {
                 //new route is ABCDE
                 //before we do the operation. We must work out what mode we are in.
                 int pos1, pos2, pos3;
-                pos3 = opCodeSeq[instructionStart + 3];
-                pos2 = opCodeSeq[instructionStart + 2];
-                pos1 = opCodeSeq[instructionStart + 1];
-                switch ((OpCodes)opCodeSeq[instructionStart])
+                int sequenceSize = opCodeSeq.Length - 1;
+                pos3 = (instructionStart + 3) <= sequenceSize ? opCodeSeq[instructionStart + 3] : 0;
+                pos2 = instructionStart + 2 <= sequenceSize ? opCodeSeq[instructionStart + 2] : 0;
+                pos1 = instructionStart + 1 <= sequenceSize ? opCodeSeq[instructionStart + 1] : 0;
+                //Debug.Write($"Before: ");
+                //int idx = 0;
+                //foreach (var num in opCodeSequence)
+                //    Console.Write($"[{idx++},{num}]");
+                //Debug.Write("\n");
+                var opCodeAndParamModeList = ProcessInstruction(opCodeSeq[instructionStart]);
+                //Console.WriteLine($"Processed:{opCodeAndParamModeList.Item1},{opCodeAndParamModeList.Item2[0]},{opCodeAndParamModeList.Item2[1]},{opCodeAndParamModeList.Item2[2]}");
+                //var opCode = (OpCodes)opCodeSeq[instructionStart];
+                int val1, val2, val3;
+
+                switch (opCodeAndParamModeList.Item1)
                 {
                     case OpCodes.add:
-                        opCodeSeq[pos3] = opCodeSeq[pos1] + opCodeSeq[pos2];
+                        val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
+                        val2 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                        val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
+                        //moves by 4 params.
+                        //Work out what the mode is, then perform the operation.
+                        //Console.Write($"Val 3 before processing: [{val3}] ");
+                        opCodeSeq[pos3] = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1) + RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                        //Console.Write($"Val 3 after [{val1}] + [{val2}]: [{opCodeSeq[pos3]}]. Modules 1:{opCodeAndParamModeList.Item2[0]} 2:{opCodeAndParamModeList.Item2[1]} 3:{opCodeAndParamModeList.Item2[2]}\n");
+                        instructionStart += 4;
                         break;
                     case OpCodes.times:
-                        opCodeSeq[pos3] = opCodeSeq[pos1] * opCodeSeq[pos2];
+                        val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
+                        val2 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                        val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
+                        //moves by 4 params
+                        //Console.Write($"Val 3 before processing [{val3}] ");
+                        opCodeSeq[pos3] = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1) * RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                        //Console.Write($"Val 3 after [{val1}] * [{val2}]: [{opCodeSeq[pos3]}]. Modules 1:{opCodeAndParamModeList.Item2[0]} 2:{opCodeAndParamModeList.Item2[1]} 3:{opCodeAndParamModeList.Item2[2]}\n");
+                        instructionStart += 4;
+                        break;
+                    case OpCodes.input:
+                        //Console.Write("Waiting for input: ");
+                        //var val = int.Parse(Console.ReadLine());
+                        opCodeSeq[pos1] = manualInput;
+                        instructionStart += 2;
+                        break;
+                    case OpCodes.output:
+                        val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
+                        output += val1.ToString();
+                        //if (output.Last() != '0')
+                        //    return true;
+                        instructionStart += 2;
+                        break;
+                    case OpCodes.jumpIfTrue:
+                        //Opcode 5 is jump-if-true: if the first parameter is non-zero,
+                        //it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+                        val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
+                        if (Math.Abs(val1) > 0)
+                        {
+                            val2 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                            instructionStart = val2;
+
+                        }
+                        else
+                        {
+                            instructionStart += 3;
+                        }
+                        break;
+                    case OpCodes.jumpIfFalse:
+                        //Opcode 6 is jump-if-false: if the first parameter is zero,
+                        //it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+                        val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
+                        if (val1 == 0)
+                        {
+                            val2 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                            instructionStart = val2;
+                        }
+                        else
+                        {
+                            instructionStart += 3;
+                        }
+                        break;
+                    case OpCodes.isLessThan:
+                        //Opcode 7 is less than: if the first parameter is less than the second parameter, 
+                        //it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+                        val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
+                        val2 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                        val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
+                        opCodeSeq[pos3] = val1 < val2 ? 1 : 0;
+                        instructionStart += 4;
+                        break;
+                    case OpCodes.isEquals:
+                        //Opcode 8 is equals: if the first parameter is equal to the second parameter,
+                        //it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+                        val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
+                        val2 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
+                        val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
+                        opCodeSeq[pos3] = val1 == val2 ? 1 : 0;
+                        instructionStart += 4;
                         break;
                     case OpCodes.halt:
-                        output = opCodeSeq[0].ToString();
-                        return false;
+                        //output = opCodeSeq[0].ToString();
+                        return true;
                 }
-                return true;
+               
+                return false;
             }
             catch (Exception exc)
             {
@@ -98,7 +196,7 @@ namespace _25DaysOfCode.Solutions
 
         }
 
-        public Tuple<OpCodes, ModuleCodes, ModuleCodes, ModuleCodes> ProcessInstruction(List<int> instruction_)
+        public Tuple<OpCodes, List<ModuleCodes>> ProcessInstruction(int instruction_)
         {
             //insturction should be in the format of ABCDE. But in digits.
             //DE is the two digit OpCode
@@ -106,16 +204,21 @@ namespace _25DaysOfCode.Solutions
             //B mode of 2nd Param
             //A mode of 3rd Param
             //instruction_ = 1002;
-            //var list = IntegerToDigits(instruction_);
-            //need to append a 0
-
-            Tuple<OpCodes, ModuleCodes, ModuleCodes, ModuleCodes> oc = new Tuple<OpCodes, ModuleCodes, ModuleCodes, ModuleCodes>((OpCodes)instruction_[0],
-                (ModuleCodes)instruction_[1],
-                (ModuleCodes)instruction_[2],
-                instruction_.Count >= 5 ? (ModuleCodes)instruction_[4] : ModuleCodes.positionMode);
-
+            //first 2 digits are the opcode.
+            var list = IntegerToDigits(instruction_);
+            int count = list.Count();
+            var secondDigit = list[count-1] == 9 ? list[count-2].ToString() : "";
+            var opCode = (OpCodes)int.Parse($"{list[count-1]}{secondDigit}");
+            //if no value is provided, then the param mode should be zero
+            var moduleList = new List<ModuleCodes>() { 0, 0, 0 };
+            int counter = 0;
+            list.Reverse();
+            for (int idx = 2; idx < list.Count; idx++) {
+                moduleList[counter] = (ModuleCodes)list[idx];
+                counter++;
+            }
+            Tuple<OpCodes, List<ModuleCodes>> oc = new Tuple<OpCodes, List<ModuleCodes>>(opCode, new List<ModuleCodes>(moduleList));
             return oc;
-
         }
 
         public string ProcessOptCodeWithMode(ref int[] opCodeSeq, int instructionStart,ref int instructionLength)
@@ -179,9 +282,9 @@ namespace _25DaysOfCode.Solutions
             switch (mc)
             {
                 case ModuleCodes.immediateMode:
-                    return opCodeSeq[index];
+                    return index;
                 case ModuleCodes.positionMode:
-                    return opCodeSeq[opCodeSeq[index]];
+                    return opCodeSeq[index];
                 default:
                     return 0;
             }

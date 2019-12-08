@@ -19,7 +19,8 @@ namespace _25DaysOfCode.Solutions.Year2019.Day02
             ICC icc = new ICC(Input);
             icc.SetArrayValues(1, 12);
             icc.SetArrayValues(2, 2);
-            return icc.IntCodeComputer();
+            icc.IntCodeComputer();
+            return icc.opCodeSequence[0].ToString();
         }
 
         protected override string SolvePartTwo()
@@ -42,8 +43,9 @@ namespace _25DaysOfCode.Solutions.Year2019.Day02
                     icc.ResetMemory();
                     icc.SetArrayValues(1, i);
                     icc.SetArrayValues(2, j);
-                    var output = icc.IntCodeComputer();
-                    if (output == product.ToString())
+                    icc.IntCodeComputer();
+                    var output = icc.opCodeSequence[0];
+                    if (output == product)
                     {
                         verb = j;
                         found = true;
