@@ -55,6 +55,7 @@
     <Compile Include="Solutions\Year2019\Day03\Day03.cs" />
     <Compile Include="Solutions\Year2019\Day04\Day04.cs" />
     <Compile Include="Solutions\Year2019\Day05\Day05.cs" />
+    <Compile Include="Solutions\Year2019\Day06\Day06.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>

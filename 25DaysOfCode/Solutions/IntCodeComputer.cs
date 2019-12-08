@@ -88,14 +88,7 @@ namespace _25DaysOfCode.Solutions
                 pos3 = (instructionStart + 3) <= sequenceSize ? opCodeSeq[instructionStart + 3] : 0;
                 pos2 = instructionStart + 2 <= sequenceSize ? opCodeSeq[instructionStart + 2] : 0;
                 pos1 = instructionStart + 1 <= sequenceSize ? opCodeSeq[instructionStart + 1] : 0;
-                //Debug.Write($"Before: ");
-                //int idx = 0;
-                //foreach (var num in opCodeSequence)
-                //    Console.Write($"[{idx++},{num}]");
-                //Debug.Write("\n");
                 var opCodeAndParamModeList = ProcessInstruction(opCodeSeq[instructionStart]);
-                //Console.WriteLine($"Processed:{opCodeAndParamModeList.Item1},{opCodeAndParamModeList.Item2[0]},{opCodeAndParamModeList.Item2[1]},{opCodeAndParamModeList.Item2[2]}");
-                //var opCode = (OpCodes)opCodeSeq[instructionStart];
                 int val1, val2, val3;
 
                 switch (opCodeAndParamModeList.Item1)
@@ -106,9 +99,7 @@ namespace _25DaysOfCode.Solutions
                         val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
                         //moves by 4 params.
                         //Work out what the mode is, then perform the operation.
-                        //Console.Write($"Val 3 before processing: [{val3}] ");
                         opCodeSeq[pos3] = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1) + RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
-                        //Console.Write($"Val 3 after [{val1}] + [{val2}]: [{opCodeSeq[pos3]}]. Modules 1:{opCodeAndParamModeList.Item2[0]} 2:{opCodeAndParamModeList.Item2[1]} 3:{opCodeAndParamModeList.Item2[2]}\n");
                         instructionStart += 4;
                         break;
                     case OpCodes.times:
@@ -116,22 +107,16 @@ namespace _25DaysOfCode.Solutions
                         val2 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
                         val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
                         //moves by 4 params
-                        //Console.Write($"Val 3 before processing [{val3}] ");
                         opCodeSeq[pos3] = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1) * RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
-                        //Console.Write($"Val 3 after [{val1}] * [{val2}]: [{opCodeSeq[pos3]}]. Modules 1:{opCodeAndParamModeList.Item2[0]} 2:{opCodeAndParamModeList.Item2[1]} 3:{opCodeAndParamModeList.Item2[2]}\n");
                         instructionStart += 4;
                         break;
                     case OpCodes.input:
-                        //Console.Write("Waiting for input: ");
-                        //var val = int.Parse(Console.ReadLine());
                         opCodeSeq[pos1] = manualInput;
                         instructionStart += 2;
                         break;
                     case OpCodes.output:
                         val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
                         output += val1.ToString();
-                        //if (output.Last() != '0')
-                        //    return true;
                         instructionStart += 2;
                         break;
                     case OpCodes.jumpIfTrue:
@@ -182,7 +167,6 @@ namespace _25DaysOfCode.Solutions
                         instructionStart += 4;
                         break;
                     case OpCodes.halt:
-                        //output = opCodeSeq[0].ToString();
                         return true;
                 }
                
