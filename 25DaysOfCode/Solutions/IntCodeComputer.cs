@@ -7,25 +7,35 @@ using System.Threading.Tasks;
 
 namespace _25DaysOfCode.Solutions
 {
+    
+
     public class ICC
     {
-        public enum OpCodes { add = 01, times = 02, halt = 99 , input = 03, output = 04, jumpIfTrue = 05, jumpIfFalse = 06, isLessThan = 07, isEquals = 08 };
-        public enum ModuleCodes { positionMode = 0, immediateMode = 1}
+        public struct ICCOutput
+        {
+            public Int64 outputFromPhase;
+            public OpCodes opCodeDetected;
+        }
+        public enum OpCodes { add = 01, times = 02, halt = 99, input = 03, output = 04, jumpIfTrue = 05, jumpIfFalse = 06, isLessThan = 07, isEquals = 08 , unexpectedHalt = 9999};
+        public enum ModuleCodes { positionMode = 0, immediateMode = 1 }
+
         public int[] opCodeSequence;
         int[] MasterSequence;
-        public int manualInput;
+        int inputCallBacks;
+        public Queue<int> manualInputs;
+
         public ICC(string[] Input_)
         {
+            inputCallBacks = 0;
             MasterSequence = Input_[0].Split(',').Select(int.Parse).ToArray();
             //MasterSequence = new int[]{
             //   3,3,1105,-1,9,1101,0,0,12,4,12,99,1};
             opCodeSequence = (int[])MasterSequence.Clone();
         }
 
-        
-
         public void ResetMemory()
         {
+            inputCallBacks = 0;
             opCodeSequence = (int[])MasterSequence.Clone();
         }
 
@@ -39,27 +49,32 @@ namespace _25DaysOfCode.Solutions
             opCodeSequence[index] = value;
         }
 
-        public string IntCodeComputer()
+        public ICCOutput IntCodeComputer()
         {
             //InitMemory();
             int jumpIndex = 0;
-            string output = "";
-            bool haltOrBadOutput = false;
+            inputCallBacks = 0;
+            ICCOutput iccMainOutput = new ICCOutput();
             while (jumpIndex <= opCodeSequence.Length)
             {
-                haltOrBadOutput = ProcessOptCode(ref opCodeSequence, ref jumpIndex, ref output);
-                int idx = 0;
-                //Debug.Write($"After: ");
-                //foreach (var num in opCodeSequence)
-                //    Console.Write($"[{idx++},{num}]");
-                //Debug.Write("\n");
-                if (haltOrBadOutput)
+                ICCOutput temp = new ICCOutput();
+                temp = ProcessOptCode(ref opCodeSequence, ref jumpIndex);
+                //iccMainOutput.opCodeDetected = temp.opCodeDetected;
+                if (temp.opCodeDetected == OpCodes.output)
+                {
+                    iccMainOutput.outputFromPhase = temp.outputFromPhase;
+                    //break;
+                }
+                else if (temp.opCodeDetected == OpCodes.halt || temp.opCodeDetected == OpCodes.unexpectedHalt)
+                {
+                    Debug.WriteLine(temp.outputFromPhase);
+                    iccMainOutput.opCodeDetected = OpCodes.halt;
                     break;
-                //output = ProcessOptCode(ref opCodeSequence, jumpIndex);
-                //jumpIndex += 4;
+                    
+                    
+                }
             }
-            //Console.WriteLine(output);
-            return output;
+            return iccMainOutput;
         }
 
         public int[] IntCodeComputerWithMode()
@@ -77,12 +92,14 @@ namespace _25DaysOfCode.Solutions
             return opCodeSequence;
         }
 
-        public bool ProcessOptCode(ref int[] opCodeSeq,ref int instructionStart, ref string output)
+        public ICCOutput ProcessOptCode(ref int[] opCodeSeq,ref int instructionStart)
         {
             try
             {
+                ICCOutput outputStruct = new ICCOutput();
                 //new route is ABCDE
                 //before we do the operation. We must work out what mode we are in.
+
                 int pos1, pos2, pos3;
                 int sequenceSize = opCodeSeq.Length - 1;
                 pos3 = (instructionStart + 3) <= sequenceSize ? opCodeSeq[instructionStart + 3] : 0;
@@ -101,6 +118,7 @@ namespace _25DaysOfCode.Solutions
                         //Work out what the mode is, then perform the operation.
                         opCodeSeq[pos3] = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1) + RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
                         instructionStart += 4;
+                        outputStruct.opCodeDetected = OpCodes.add;
                         break;
                     case OpCodes.times:
                         val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
@@ -109,15 +127,20 @@ namespace _25DaysOfCode.Solutions
                         //moves by 4 params
                         opCodeSeq[pos3] = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1) * RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[1], opCodeSeq, pos2);
                         instructionStart += 4;
+                        outputStruct.opCodeDetected = OpCodes.times;
                         break;
                     case OpCodes.input:
-                        opCodeSeq[pos1] = manualInput;
-                        instructionStart += 2;
+                        if (manualInputs.Count > 0)
+                        {
+                            opCodeSeq[pos1] = manualInputs.Dequeue();
+                            instructionStart += 2;
+                        }
                         break;
                     case OpCodes.output:
                         val1 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[0], opCodeSeq, pos1);
-                        output += val1.ToString();
                         instructionStart += 2;
+                        outputStruct.opCodeDetected = OpCodes.output;
+                        outputStruct.outputFromPhase = val1;
                         break;
                     case OpCodes.jumpIfTrue:
                         //Opcode 5 is jump-if-true: if the first parameter is non-zero,
@@ -133,6 +156,7 @@ namespace _25DaysOfCode.Solutions
                         {
                             instructionStart += 3;
                         }
+                        outputStruct.opCodeDetected = OpCodes.jumpIfTrue;
                         break;
                     case OpCodes.jumpIfFalse:
                         //Opcode 6 is jump-if-false: if the first parameter is zero,
@@ -147,6 +171,7 @@ namespace _25DaysOfCode.Solutions
                         {
                             instructionStart += 3;
                         }
+                        outputStruct.opCodeDetected = OpCodes.jumpIfFalse;
                         break;
                     case OpCodes.isLessThan:
                         //Opcode 7 is less than: if the first parameter is less than the second parameter, 
@@ -156,6 +181,7 @@ namespace _25DaysOfCode.Solutions
                         val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
                         opCodeSeq[pos3] = val1 < val2 ? 1 : 0;
                         instructionStart += 4;
+                        outputStruct.opCodeDetected = OpCodes.isLessThan;
                         break;
                     case OpCodes.isEquals:
                         //Opcode 8 is equals: if the first parameter is equal to the second parameter,
@@ -165,17 +191,20 @@ namespace _25DaysOfCode.Solutions
                         val3 = RetrieveValueBasedOnMode(opCodeAndParamModeList.Item2[2], opCodeSeq, pos3);
                         opCodeSeq[pos3] = val1 == val2 ? 1 : 0;
                         instructionStart += 4;
+                        outputStruct.opCodeDetected = OpCodes.isEquals;
                         break;
                     case OpCodes.halt:
-                        return true;
+                        outputStruct.opCodeDetected = OpCodes.halt;
+                        break;
                 }
-               
-                return false;
+                return outputStruct;
             }
             catch (Exception exc)
             {
                 Debug.WriteLine(exc.Message);
-                return false;
+                ICCOutput oc = new ICCOutput();
+                oc.opCodeDetected = OpCodes.unexpectedHalt;
+                return oc;
             }
 
         }

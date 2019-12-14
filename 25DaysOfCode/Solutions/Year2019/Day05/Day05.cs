@@ -17,16 +17,15 @@ namespace _25DaysOfCode.Solutions.Year2019.Day05
         protected override string SolvePartOne()
         {
             ICC icc = new ICC(input);
-            icc.manualInput = 1;
-            return icc.IntCodeComputer().Replace("0", "");
+            icc.manualInputs.Enqueue(1);
+            return icc.IntCodeComputer().outputFromPhase.ToString();
         }
 
         protected override string SolvePartTwo()
         {
             ICC icc = new ICC(input);
-            icc.manualInput = 5;
-            var output = icc.IntCodeComputer();
-            return output;
+            icc.manualInputs.Enqueue(7);
+            return icc.IntCodeComputer().outputFromPhase.ToString();
         }
     }
 }

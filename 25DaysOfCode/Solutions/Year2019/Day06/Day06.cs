@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +13,6 @@ namespace _25DaysOfCode.Solutions.Year2019.Day06
         public Day06() : base ("Universal Orbit Map",2019,6)
         {
             input = Input;
-            input = new string[] { "COM)B", "B)C", "C)D", "D)E", "E)F", "B)G", "G)H", "D)I", "E)J", "J)K", "K)L", "K)YOU", "I)SAN" };
             orbitMaps = new Dictionary<string, List<string>>();
             PopulateOrbitMaps(input);
         }
@@ -39,15 +37,13 @@ namespace _25DaysOfCode.Solutions.Year2019.Day06
 
         protected override string SolvePartOne()
         {
-            //return CalculateSharedOrbits(orbitMaps).ToString();
+            return CalculateSharedOrbits(orbitMaps).ToString();
             //return CalculateSharedOrbits(input).ToString();
-            return "";
         }
 
         protected override string SolvePartTwo()
         {
-
-            return FindShortestPathToSanta(orbitMaps);
+            return "";
         }
 
         public int CalculateSharedOrbits(Dictionary<string, List<string>> orbitMaps)
@@ -82,62 +78,23 @@ namespace _25DaysOfCode.Solutions.Year2019.Day06
             return sum;
         }
 
-        StreamWriter sr;
-        public List<string> ReturnOrbitPath(string planet, Dictionary<string, List<string>> orbitMap)
+        public List<string> FindPathToPlanet(Dictionary<string, List<string>> orbitMap, string planet)
         {
-
-            List<string> sum = new List<string>();
-
-            var planetList = orbitMap.Where(x => x.Value.Contains(planet));
-            if (planetList.Count() != 0)
-            {
-                sr.Write(planet + ",");
-                sum.Add(planet);
-                sum.AddRange(ReturnOrbitPath(planetList.First().Key, orbitMap));
-            }
-            
-            return sum;
-        }
-
-        public string FindShortestPathToSanta(Dictionary<string, List<string>> orbitMap)
-        {
-            sr = new StreamWriter(Directory.GetCurrentDirectory() + "Output.txt");
             //var paths = orbitMap.Values(x => x.Contains(planet));
             string me = "YOU";
-            string santa = "SAN";
+            string santa = "SANTA";
 
-            var meList = orbitMap.Where(x => x.Value.Contains(me));
-            var santaList = orbitMap.Where(x => x.Value.Contains(santa));
-            var parentPlanet = santaList.First().Key;
-
-
-            var possibleOrbitsFromMe = ReturnOrbitPath(meList.First().Key,orbitMap);
-            sr.WriteLine("\n");
-            var possibleOrbitsFromSanta = ReturnOrbitPath(santaList.First().Key, orbitMap);
-            sr.WriteLine("\n");
-            var intersections = possibleOrbitsFromMe.Intersect(possibleOrbitsFromSanta);
-            sr.Flush();
-            int lowest = int.MaxValue;
-            foreach(var interesection in intersections)
+            foreach (var reference in orbitMap.Keys)
             {
-                int indexFromMe = possibleOrbitsFromMe.IndexOf(interesection);
-                int indexFromSanta = possibleOrbitsFromSanta.IndexOf(interesection);
-                int sum = indexFromMe + indexFromSanta;
-                sr.WriteLine($"{indexFromMe},{indexFromSanta}");
-                if (sum < lowest)
-                {
-                    lowest = sum;
-                }
+                
+            }
+
+            if(orbitMap.TryGetValue(planet, out List<string> orbiters))
+            {
 
             }
-            //to take out the end orbit
-            int lowestPathToSanta = lowest;
 
-
-
-            sr.Close();
-
-            return lowestPathToSanta.ToString();
+            return new List<string>();
         }
     }
 }
